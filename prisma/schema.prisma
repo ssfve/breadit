@@ -63,6 +63,8 @@ model User {
   Post        Post[]
   Comment     Comment[]
   CommentVote CommentVote[]
+  apiKey   ApiKey[]
+  apiKeyId String?
 }
 
 model Subreddit {
@@ -101,7 +103,7 @@ model Post {
   authorId    String
   subreddit   Subreddit @relation(fields: [subredditId], references: [id])
   subredditId String
-  comments    Comment[] 
+  comments    Comment[]
   votes       Vote[]
 
   @@index([authorId])
@@ -151,4 +153,40 @@ model CommentVote {
   @@id([userId, commentId])
   @@index([userId])
   @@index([commentId])
+}
+
+model ApiKey {
+  id      String  @id @default(cuid())
+  key     String  @unique
+  enabled Boolean @default(true)
+  User    User    @relation(fields: [userId], references: [id])
+  userId  String
+
+  requests ApiRequest[]
+
+  @@unique([userId, key, enabled])
+}
+
+model ApiRequest {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  method    String
+  path      String
+  status    Int
+  duration  Int
+
+  usedApiKey String
+
+  ApiKey   ApiKey @relation(fields: [apiKeyId], references: [id])
+  apiKeyId String
+
+  @@index([apiKeyId, timestamp])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
