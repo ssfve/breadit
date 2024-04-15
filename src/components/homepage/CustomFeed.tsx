@@ -36,7 +36,7 @@ const CustomFeed = async () => {
       comments: true,
       subreddit: true,
     },
-    take: INFINITE_SCROLL_PAGINATION_RESULTS,
+    take: parseInt(INFINITE_SCROLL_PAGINATION_RESULTS.toString()),
   })
 
   return <PostFeed initialPosts={posts} />
