@@ -36,8 +36,9 @@ export async function GET(req: Request) {
       })
 
     let whereClause = {}
-
+  
     if (subredditName) {
+      console.log("subredditName is", subredditName)
       whereClause = {
         subreddit: {
           name: subredditName,
