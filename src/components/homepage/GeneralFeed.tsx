@@ -16,7 +16,7 @@ const GeneralFeed = async () => {
     take: parseInt(INFINITE_SCROLL_PAGINATION_RESULTS.toString()), 
     // 4 to demonstrate infinite scroll, should be higher in production
   })
-
+  console.log(posts)
   return <PostFeed initialPosts={posts} />
 }
 
