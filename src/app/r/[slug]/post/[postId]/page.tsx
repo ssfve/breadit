@@ -24,7 +24,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   const cachedPost = (await redis.hgetall(
     `post:${params.postId}`
   )) as CachedPost
-
+  console.log
   let post: (Post & { votes: Vote[]; author: User }) | null = null
 
   if (!cachedPost) {
