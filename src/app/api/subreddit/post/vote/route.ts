@@ -70,6 +70,7 @@ export async function PATCH(req: Request) {
             createdAt: post.createdAt,
           }
 
+          console.log(`post:${postId}`)
           await redis.hset(`post:${postId}`, cachePayload) // Store the post data as a hash
         }
 
@@ -121,13 +122,14 @@ export async function PATCH(req: Request) {
       },
     })
 
-    // Recount the votes
+    // Recount the votes in db result
     const votesAmt = post.votes.reduce((acc, vote) => {
       if (vote.type === 'UP') return acc + 1
       if (vote.type === 'DOWN') return acc - 1
       return acc
     }, 0)
 
+    console.log("votesAmt is", votesAmt)
     if (votesAmt >= CACHE_AFTER_UPVOTES) {
       const cachePayload: CachedPost = {
         authorUsername: post.author.username ?? '',
