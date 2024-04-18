@@ -10,6 +10,7 @@ const CustomFeed = async () => {
   // only rendered if session exists, so this will not happen
   if (!session) return notFound()
 
+  console.log("CustomFeed is called");
   const followedCommunities = await db.subscription.findMany({
     where: {
       userId: session.user.id,
@@ -19,6 +20,7 @@ const CustomFeed = async () => {
     },
   })
 
+  console.log("findMany is called")
   const posts = await db.post.findMany({
     where: {
       subreddit: {

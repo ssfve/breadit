@@ -10,7 +10,7 @@ export const fetchCache = "force-no-store";
 
 export default async function Home() {
   const session = await getAuthSession();
-
+  console.log("session is", session);
   return (
     <>
       <h1 className="font-bold text-3xl md:text-4xl">Your feed</h1>
