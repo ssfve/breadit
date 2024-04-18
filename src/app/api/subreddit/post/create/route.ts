@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       return new Response('Subscribe to post', { status: 403 })
     }
 
+    console.log("Post is called")
     await db.post.create({
       data: {
         title,
@@ -35,6 +36,19 @@ export async function POST(req: Request) {
         subredditId,
       },
     })
+
+    // after database create cache
+    // const cachePayload: CachedPost = {
+    //   authorUsername: post.author.username ?? '',
+    //   content: JSON.stringify(post.content),
+    //   id: post.id,
+    //   title: post.title,
+    //   currentVote: null,
+    //   createdAt: post.createdAt,
+    // }
+
+    // console.log(`post:${postId}`)
+    // await redis.hset(`post:${postId}`, cachePayload) // Store the post data as a hash
 
     return new Response('OK')
   } catch (error) {

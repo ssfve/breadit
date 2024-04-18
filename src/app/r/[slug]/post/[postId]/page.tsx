@@ -21,10 +21,12 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
-  const cachedPost = (await redis.hgetall(
-    `post:${params.postId}`
-  )) as CachedPost
-  console.log(cachedPost)
+  
+  console.log("SubRedditPostPage is called")
+  // we do not cache posts
+  let cachedPost = null
+  // const cachedPost = {}
+  // console.log(cachedPost)
   let post: (Post & { votes: Vote[]; author: User }) | null = null
 
   if (!cachedPost) {
@@ -37,6 +39,27 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
         author: true,
       },
     })
+
+    cachedPost = {
+      authorUsername: post?.author.username ?? '',
+      content: JSON.stringify(post?.content),
+      id: post?.id ?? '',
+      title: post?.title ?? 'error loading post title',
+      currentVote: null,
+      createdAt: post?.createdAt ?? new Date(),
+    }
+
+    const cachePayload: CachedPost = {
+      authorUsername: post?.author.username ?? '',
+      content: JSON.stringify(post?.content),
+      id: post?.id ?? '',
+      title: post?.title ?? 'error loading post title',
+      currentVote: null,
+      createdAt: post?.createdAt ?? new Date(),
+    }
+
+    console.log("post is ", post);
+    await redis.hset(`post:${post?.id}`, cachePayload) // Store the post data as a hash
   }
 
   if (!post && !cachedPost) return notFound()
