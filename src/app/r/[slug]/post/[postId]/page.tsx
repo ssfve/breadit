@@ -20,20 +20,25 @@ interface SubRedditPostPageProps {
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 let cachedPost: CachedPost | null = null;
+let cachedData: (Post & { votes: Vote[] }) | null = null;
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   
   console.log("SubRedditPostPage is called");
   if (!cachedPost) {
     // will not block when fetching from redis
-    redis.hget(`post`, `${params.postId}`).then((data) => {
-      cachedPost = (data) as CachedPost
+    redis.hget(`post`, `${params.postId}`).then((o) => {
+      cachedPost = (o) as CachedPost
+    })
+    // possibly fail on first call
+    redis.hget(`data`, `${params.postId}`).then((o) => {
+      cachedData = (o) as (Post & { votes: Vote[] })
     })
   }
   console.log("cachedPost is ", cachedPost);
   // console.log(cachedPost)
   let post: (Post & { votes: Vote[]; author: User }) | null = null;
-
+  
   if (!cachedPost) {
     console.log("start to call post.findFirst");
     post = await db.post.findFirst({
@@ -67,6 +72,19 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
 
     console.log("post is ", post);
     redis.hset(`post:${post?.id}`, cachePayload); 
+
+    cachedData = await db.post.findUnique({
+        where: {
+          id: params.postId,
+        },
+        include: {
+          votes: true,
+        },
+      });
+    if(cachedData){
+      redis.hset(`data:${post?.id}`, cachedData); 
+    }
+    
     // Store the post data as a hash
     console.log("return from redis.hset");
   }
@@ -80,16 +98,8 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           {/* @ts-expect-error server component */}
           <PostVoteServer
             postId={post?.id ?? cachedPost.id}
-            getData={async () => {
-              return await db.post.findUnique({
-                where: {
-                  id: params.postId,
-                },
-                include: {
-                  votes: true,
-                },
-              });
-            }}
+            // pass in a promise
+            getData={cachedData ? () => Promise.resolve(cachedData) : undefined}
           />
         </Suspense>
 
