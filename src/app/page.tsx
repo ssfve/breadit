@@ -10,16 +10,18 @@ import { redis } from '@/lib/redis'
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
-let session: Session | null = null;
+// let session: Session | null = null;
 
 export default async function Home() {
 
   console.log("Home is called");
-  session = await redis.get(`session`);
-  if (!session) {
-    session = await getAuthSession();
-    redis.set(`session`, JSON.stringify(session));
-  }
+  // session = redis.get(`session`);
+  // console.log("redis get finished");
+  // if (!session) {
+    //do not wait
+    const session = getAuthSession();
+    // redis.set(`session`, JSON.stringify(session));
+  // }
   console.log("session is", session);
   return (
     <>
