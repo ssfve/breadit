@@ -5,6 +5,7 @@ import { getAuthSession } from "@/lib/auth";
 import { Session } from "next-auth";
 import { Home as HomeIcon } from "lucide-react";
 import Link from "next/link";
+import { get } from "http";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
