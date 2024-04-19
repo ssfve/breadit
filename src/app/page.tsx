@@ -8,10 +8,11 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+const session = getAuthSession();
+
 export default async function Home() {
 
   console.log("Home is called");
-  const session = await getAuthSession();
   console.log("session is", session);
   return (
     <>
