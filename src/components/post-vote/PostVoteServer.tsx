@@ -3,6 +3,7 @@ import type { Post, Vote } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import PostVoteClient from './PostVoteClient'
 import { redis } from '@/lib/redis'
+import { Session } from "next-auth";
 
 interface PostVoteServerProps {
   postId: string
@@ -24,7 +25,7 @@ const PostVoteServer = async ({
   initialVote,
   getData,
 }: PostVoteServerProps) => {
-  const session = await redis.get(`session`)
+  const session = (await redis.get(`session`)) as Session
   // const session = await getAuthSession()
 
   let _votesAmt: number = 0
