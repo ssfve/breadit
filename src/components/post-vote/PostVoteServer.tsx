@@ -30,6 +30,7 @@ const PostVoteServer = async ({
 
   if (getData) {
     // fetch data in component
+    console.log("wait on data started")
     const post = await getData()
     if (!post) return notFound()
 

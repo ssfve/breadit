@@ -26,20 +26,6 @@ let post: (Post & { votes: Vote[]; author: User }) | null = null;
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("SubRedditPostPage is called");
   if (!cachedPost) {
-    // will not block when fetching from redis
-    redis.hget(`post`, `${params.postId}`).then((o) => {
-      cachedPost = o as CachedPost;
-    });
-    // possibly fail on first call
-    redis.hget(`data`, `${params.postId}`).then((o) => {
-      cachedData = o as Post & { votes: Vote[] };
-    });
-  }
-  console.log("cachedPost is ", cachedPost);
-  // console.log(cachedPost)
-
-  console.log("start to call post.findFirst");
-  if (!cachedPost) {
     db.post
       .findFirst({
         where: {
@@ -69,13 +55,12 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           createdAt: post?.createdAt ?? new Date(),
         };
 
-        console.log("post is ", post);
         redis.hset(`post:${post?.id}`, cachePayload);
         console.log("return from post.findFirst");
       });
   }
 
-  if (cachedData) {
+  if (!cachedData) {
     db.post
       .findUnique({
         where: {
@@ -85,16 +70,29 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           votes: true,
         },
       })
-      .then((cachedData) => {
+      .then((o) => {
+        cachedData = o;
         if (cachedData) {
           redis.hset(`data:${post?.id}`, cachedData);
         }
+        console.log("return from post.findUnique");
       });
   }
 
   // Store the post data as a hash
   console.log("return from redis.hset");
-
+  if (!cachedPost) {
+    // will not block when fetching from redis
+    cachedPost = await redis.hget(`post`, `${params.postId}`);
+    console.log("cachedPost is ", cachedPost);
+  }
+  if (!cachedData) {
+    // possibly fail on first call
+    cachedData = await redis.hget(`data`, `${params.postId}`);
+    console.log("cachedData is ", cachedData);
+  }
+  
+  // console.log(cachedPost)
   if (!post && !cachedPost) return notFound();
   console.log("start redenring SubRedditPostPage");
   return (
