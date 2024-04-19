@@ -6,34 +6,19 @@ import { Session } from "next-auth";
 import { Home as HomeIcon } from "lucide-react";
 import Link from "next/link";
 import { get } from "http";
+import { redis } from '@/lib/redis'
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 let session: Session | null = null;
-let sessionCache: Session | null = null;
-let sessionPromise: Promise<Session | null> | null = null;
-
-async function getCachedSession() {
-  if (sessionCache) {
-    // change from this session cache to clear session
-    let clearSession = sessionCache;
-    sessionCache = null;
-    return clearSession;
-  }
-
-  if (!sessionPromise) {
-    sessionPromise = getAuthSession();
-  }
-
-  sessionCache = await sessionPromise;
-  return sessionCache;
-}
 
 export default async function Home() {
 
   console.log("Home is called");
+  session = await redis.get(`session`);
   if (!session) {
-    session = await getCachedSession();
+    session = await getAuthSession();
+    redis.set(`session`, JSON.stringify(session));
   }
   console.log("session is", session);
   return (
