@@ -7,18 +7,20 @@ import { Session } from "next-auth";
 import { CachedPost } from "@/types/redis";
 import { ca } from "date-fns/locale";
 import { get } from "http";
+import { getDate } from "date-fns";
 
 interface PostVoteServerProps {
   postId: string;
   initialVotesAmt?: number;
   initialVote?: Vote["type"] | null;
   post: CachedPost & { votes: Vote[] } | null;
-  // getData?: () => Promise<(Post & { votes: Vote[] }) | null>;
+  getData?: () => Promise<(Post & { votes: Vote[] })>;
 }
 
 /**
  * We split the PostVotes into a client and a server component to allow for dynamic data
  * fetching inside of this component, allowing for faster page loads via suspense streaming.
+ * 
  * We also have to option to fetch this info on a page-level and pass it in.
  *
  */
@@ -27,7 +29,7 @@ const PostVoteServer = async ({
   postId,
   initialVotesAmt,
   initialVote,
-  post,
+  getData
 }: PostVoteServerProps) => {
   console.log("PostVoteServer is called");
   const session = (await redis.get(`session`)) as Session;
@@ -37,8 +39,12 @@ const PostVoteServer = async ({
   let _votesAmt: number = 0;
   let _currentVote: Vote["type"] | null | undefined = undefined;
 
-  if (post) {
-    // fetch data in component
+  if (getData) {
+    // fetch data in component possible after db query
+    console.log("wait to getData");
+    const post = await getData();
+    console.log("Vote post is ", post);
+    
     _votesAmt = post.votes.reduce((acc, vote) => {
       if (vote.type === "UP") return acc + 1;
       if (vote.type === "DOWN") return acc - 1;

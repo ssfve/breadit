@@ -22,6 +22,7 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 let post: (CachedPost & { votes: Vote[]; author: User; }) | null = null;
 let cachedPost: (CachedPost & { votes: Vote[]; }) | null = null;
+let cachedData: (Post & { votes: Vote[]; }) | null = null;
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("SubRedditPostPage is called");
@@ -38,7 +39,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
         },
       })
       .then((o) => {
-        // cachedData = o;
+        cachedData = o;
         cachedPost = {
           authorUsername: o?.author.username ?? "",
           content: JSON.stringify(o?.content),
@@ -72,6 +73,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
             // pass in a promise
+            getData={cachedData ? () => Promise.resolve(cachedData)}
             post={cachedPost}
           />
         </Suspense>
