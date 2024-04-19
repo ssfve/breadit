@@ -9,12 +9,27 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 let session: Session | null = null;
+let sessionCache: Session | null = null;
+let sessionPromise: Promise<Session | null> | null = null;
+
+async function getCachedSession() {
+  if (sessionCache) {
+    return sessionCache;
+  }
+
+  if (!sessionPromise) {
+    sessionPromise = getAuthSession();
+  }
+
+  sessionCache = await sessionPromise;
+  return sessionCache;
+}
 
 export default async function Home() {
 
   console.log("Home is called");
   if (!session) {
-    session = await getAuthSession();
+    session = await getCachedSession();
   }
   console.log("session is", session);
   return (

@@ -42,7 +42,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user!.id
         return token
       }
-
+      // if username do not exist give one
       if (!dbUser.username) {
         await db.user.update({
           where: {
