@@ -20,16 +20,15 @@ interface SubRedditPostPageProps {
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
-let cachedPost: CachedPost | null = null;
-let cachedData: (Post & { votes: Vote[] }) | null = null;
-let post: (CachedPost & { votes: Vote[]; author: User }) | null = null;
+let post: (CachedPost & { votes: Vote[]; author: User; }) | null = null;
+let cachedPost: (CachedPost & { votes: Vote[]; }) | null = null;
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("SubRedditPostPage is called");
   // post is null do not use
   if (!cachedPost) {
     db.post
-      .findFirst({
+      .findUnique({
         where: {
           id: params.postId,
         },
@@ -39,7 +38,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
         },
       })
       .then((o) => {
-        cachedData = o;
+        // cachedData = o;
         cachedPost = {
           authorUsername: o?.author.username ?? "",
           content: JSON.stringify(o?.content),
@@ -47,47 +46,15 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           title: o?.title ?? "error loading post title",
           currentVote: null,
           createdAt: o?.createdAt ?? new Date(),
+          votes: o?.votes ?? [], // Add nullish coalescing operator to assign an empty array when votes is undefined
         };
 
-        const redisData = {
-          ...cachedPost,
-          votes: o?.votes,
-        };
-
-        redis.set(`post-${o?.id}`, redisData);
+        redis.set(`post-${o?.id}`, cachedPost);
         console.log("return from post.findFirst");
       });
   }
 
-  // if (!cachedData) {
-  //   db.post
-  //     .findUnique({
-  //       where: {
-  //         id: params.postId,
-  //       },
-  //       include: {
-  //         votes: true,
-  //       },
-  //     }).then((o) => {
-  //       cachedData = o
-
-  //       const RedisData = {
-  //         // authorUsername: o?.author.username ?? "",
-  //         content: JSON.stringify(o?.content),
-  //         id: o?.id ?? "",
-  //         title: o?.title ?? "error loading post title",
-  //         currentVote: null,
-  //         createdAt: o?.createdAt ?? new Date(),
-  //         authorId: o?.authorId,
-  //         votes: o?.votes,
-  //       };
-  //       redis.set(`data-${post?.id}`, RedisData);
-  //       console.log("return from post.findFirst");
-  //     });
-  // }
-
-  // Store the post data as a hash
-  // console.log("return from redis.hset");
+  // faster to get cachedPost
   if (!cachedPost) {
     console.log("wait on get CachedPost");
     cachedPost = await redis.get(`post-${params.postId}`);
@@ -105,7 +72,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
             // pass in a promise
-            getData={() => Promise.resolve(cachedData)}
+            post={cachedPost}
           />
         </Suspense>
 
