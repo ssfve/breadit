@@ -2,6 +2,7 @@ import { getAuthSession } from '@/lib/auth'
 import type { Post, Vote } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import PostVoteClient from './PostVoteClient'
+import { redis } from '@/lib/redis'
 
 interface PostVoteServerProps {
   postId: string
@@ -23,7 +24,8 @@ const PostVoteServer = async ({
   initialVote,
   getData,
 }: PostVoteServerProps) => {
-  const session = await getAuthSession()
+  const session = await redis.get(`session`)
+  // const session = await getAuthSession()
 
   let _votesAmt: number = 0
   let _currentVote: Vote['type'] | null | undefined = undefined

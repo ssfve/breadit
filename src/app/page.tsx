@@ -10,7 +10,7 @@ import { redis } from '@/lib/redis'
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
-// let session: Session | null = null;
+let session: Session | null = null;
 
 export default async function Home() {
 
@@ -19,11 +19,13 @@ export default async function Home() {
   // console.log("redis get finished");
   // if (!session) {
     //do not wait
-  // const session = await getAuthSession();
-  const session = null;
-    // redis.set(`session`, JSON.stringify(session));
-  // }
-  // console.log("session is", session);
+  getAuthSession().then((session) => {
+    redis.set(`session`, session);
+    console.log("session is", session);
+  });
+  if(!session){
+    session = await redis.get(`session`)
+  }
   return (
     <>
       <h1 className="font-bold text-3xl md:text-4xl">Your feed</h1>
