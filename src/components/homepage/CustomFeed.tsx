@@ -3,17 +3,23 @@ import { getAuthSession } from '@/lib/auth'
 import { db } from '@/lib/db'
 import PostFeed from '../PostFeed'
 import { notFound } from 'next/navigation'
+import { Session } from 'next-auth'; // Replace 'your-session-module' with the actual module name
 
-const CustomFeed = async () => {
-  const session = await getAuthSession()
+type CustomFeedProps = {
+  session: Session | null,
+};
+
+export default async function CustomFeed({ session }: CustomFeedProps) {
+  // already checked outside
+  // const session = await getAuthSession()
 
   // only rendered if session exists, so this will not happen
-  if (!session) return notFound()
+  // if (!session) return notFound()
 
   console.log("CustomFeed is called");
   const followedCommunities = await db.subscription.findMany({
     where: {
-      userId: session.user.id,
+      userId: session?.user.id,
     },
     include: {
       subreddit: true,
@@ -40,8 +46,8 @@ const CustomFeed = async () => {
     },
     take: parseInt(INFINITE_SCROLL_PAGINATION_RESULTS.toString()),
   })
-
+  console.log("posts in CustomFeed is ", posts);
   return <PostFeed initialPosts={posts} />
 }
 
-export default CustomFeed
+// export default CustomFeed({ session })
