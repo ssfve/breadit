@@ -73,7 +73,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
             // pass in a promise
-            getData={cachedData ? () => Promise.resolve(cachedData)}
+            getData={() => Promise.resolve(cachedData)}
             post={cachedPost}
           />
         </Suspense>

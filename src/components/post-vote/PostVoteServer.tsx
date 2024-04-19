@@ -14,7 +14,7 @@ interface PostVoteServerProps {
   initialVotesAmt?: number;
   initialVote?: Vote["type"] | null;
   post: CachedPost & { votes: Vote[] } | null;
-  getData?: () => Promise<(Post & { votes: Vote[] })>;
+  getData?: () => Promise<(Post & { votes: Vote[] } | null)>;
 }
 
 /**
@@ -42,9 +42,12 @@ const PostVoteServer = async ({
   if (getData) {
     // fetch data in component possible after db query
     console.log("wait to getData");
+  
     const post = await getData();
+
+    if(!post) notFound();
     console.log("Vote post is ", post);
-    
+
     _votesAmt = post.votes.reduce((acc, vote) => {
       if (vote.type === "UP") return acc + 1;
       if (vote.type === "DOWN") return acc - 1;
