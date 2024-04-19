@@ -19,10 +19,11 @@ export default async function Home() {
   // console.log("redis get finished");
   // if (!session) {
     //do not wait
-    const session = getAuthSession();
+  // const session = await getAuthSession();
+  const session = null;
     // redis.set(`session`, JSON.stringify(session));
   // }
-  console.log("session is", session);
+  // console.log("session is", session);
   return (
     <>
       <h1 className="font-bold text-3xl md:text-4xl">Your feed</h1>
