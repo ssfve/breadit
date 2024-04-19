@@ -14,7 +14,10 @@ let sessionPromise: Promise<Session | null> | null = null;
 
 async function getCachedSession() {
   if (sessionCache) {
-    return sessionCache;
+    // change from this session cache to clear session
+    let clearSession = sessionCache;
+    sessionCache = null;
+    return clearSession;
   }
 
   if (!sessionPromise) {
