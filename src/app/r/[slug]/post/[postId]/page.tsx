@@ -55,7 +55,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           createdAt: post?.createdAt ?? new Date(),
         };
 
-        redis.hset(`post:${post?.id}`, cachePayload);
+        redis.set(`post-${post?.id}`, cachePayload);
         console.log("return from post.findFirst");
       });
   }
@@ -73,7 +73,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
       .then((o) => {
         cachedData = o;
         if (cachedData) {
-          redis.hset(`data:${post?.id}`, cachedData);
+          redis.set(`data-${post?.id}`, cachedData);
         }
         console.log("return from post.findUnique");
       });
@@ -83,12 +83,12 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("return from redis.hset");
   if (!cachedPost) {
     // will not block when fetching from redis
-    cachedPost = await redis.hget(`post`, `${params.postId}`);
+    cachedPost = await redis.get(`post-${params.postId}`);
     console.log("cachedPost is ", cachedPost);
   }
   if (!cachedData) {
     // possibly fail on first call
-    cachedData = await redis.hget(`data`, `${params.postId}`);
+    cachedData = await redis.get(`data-${params.postId}`);
     console.log("cachedData is ", cachedData);
   }
   
