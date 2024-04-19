@@ -24,8 +24,10 @@ export default async function Home() {
     console.log("session is", session);
   });
   if(!session){
+    console.log("wait on get session started")
     session = await redis.get(`session`)
   }
+  console.log("Home rendering started")
   return (
     <>
       <h1 className="font-bold text-3xl md:text-4xl">Your feed</h1>
