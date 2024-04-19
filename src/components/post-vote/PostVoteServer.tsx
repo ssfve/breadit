@@ -1,9 +1,10 @@
 import { getAuthSession } from '@/lib/auth'
-import type { Post, Vote } from '@prisma/client'
+import type { Post, User, Vote } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import PostVoteClient from './PostVoteClient'
 import { redis } from '@/lib/redis'
 import { Session } from "next-auth";
+import { CachedPost } from '@/types/redis'
 
 interface PostVoteServerProps {
   postId: string
@@ -25,7 +26,9 @@ const PostVoteServer = async ({
   initialVote,
   getData,
 }: PostVoteServerProps) => {
+  console.log("PostVoteServer is called")
   const session = (await redis.get(`session`)) as Session
+  console.log("Vote session is ", session)
   // const session = await getAuthSession()
 
   let _votesAmt: number = 0
@@ -34,7 +37,10 @@ const PostVoteServer = async ({
   if (getData) {
     // fetch data in component
     console.log("wait on data started")
-    const post = await getData()
+    // const post = await getData()
+    const post = (await redis.get(`post-${postId}`)) as CachedPost & { votes: Vote[]; };
+    console.log("post is", post)
+
     if (!post) return notFound()
 
     _votesAmt = post.votes.reduce((acc, vote) => {
@@ -43,8 +49,9 @@ const PostVoteServer = async ({
       return acc
     }, 0)
 
+    // seesion user id is your post
     _currentVote = post.votes.find(
-      (vote) => vote.userId === session?.user?.id
+      (vote) => vote.userId === session?.user.id
     )?.type
   } else {
     // passed as props

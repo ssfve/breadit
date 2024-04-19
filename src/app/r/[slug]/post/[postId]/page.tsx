@@ -6,7 +6,8 @@ import { db } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { formatTimeToNow } from "@/lib/utils";
 import { CachedPost } from "@/types/redis";
-import { Post, User, Vote } from "@prisma/client";
+import { Post, User, Vote, VoteType } from "@prisma/client";
+import { GetResult } from "@prisma/client/runtime";
 import { ArrowBigDown, ArrowBigUp, Loader2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -21,10 +22,11 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 let cachedPost: CachedPost | null = null;
 let cachedData: (Post & { votes: Vote[] }) | null = null;
-let post: (Post & { votes: Vote[]; author: User }) | null = null;
+let post: (CachedPost & { votes: Vote[]; author: User }) | null = null;
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("SubRedditPostPage is called");
+  // post is null do not use
   if (!cachedPost) {
     db.post
       .findFirst({
@@ -36,60 +38,60 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           author: true,
         },
       })
-      .then((post) => {
+      .then((o) => {
+        cachedData = o;
         cachedPost = {
-          authorUsername: post?.author.username ?? "",
-          content: JSON.stringify(post?.content),
-          id: post?.id ?? "",
-          title: post?.title ?? "error loading post title",
+          authorUsername: o?.author.username ?? "",
+          content: JSON.stringify(o?.content),
+          id: o?.id ?? "",
+          title: o?.title ?? "error loading post title",
           currentVote: null,
-          createdAt: post?.createdAt ?? new Date(),
+          createdAt: o?.createdAt ?? new Date(),
         };
 
-        const cachePayload: CachedPost = {
-          authorUsername: post?.author.username ?? "",
-          content: JSON.stringify(post?.content),
-          id: post?.id ?? "",
-          title: post?.title ?? "error loading post title",
-          currentVote: null,
-          createdAt: post?.createdAt ?? new Date(),
+        const redisData = {
+          ...cachedPost,
+          votes: o?.votes,
         };
 
-        redis.set(`post-${post?.id}`, cachePayload);
+        redis.set(`post-${o?.id}`, redisData);
         console.log("return from post.findFirst");
       });
   }
 
-  if (!cachedData) {
-    db.post
-      .findUnique({
-        where: {
-          id: params.postId,
-        },
-        include: {
-          votes: true,
-        },
-      })
-      .then((o) => {
-        cachedData = o;
-        if (cachedData) {
-          redis.set(`data-${post?.id}`, cachedData);
-        }
-        console.log("return from post.findUnique");
-      });
-  }
+  // if (!cachedData) {
+  //   db.post
+  //     .findUnique({
+  //       where: {
+  //         id: params.postId,
+  //       },
+  //       include: {
+  //         votes: true,
+  //       },
+  //     }).then((o) => {
+  //       cachedData = o
+
+  //       const RedisData = {
+  //         // authorUsername: o?.author.username ?? "",
+  //         content: JSON.stringify(o?.content),
+  //         id: o?.id ?? "",
+  //         title: o?.title ?? "error loading post title",
+  //         currentVote: null,
+  //         createdAt: o?.createdAt ?? new Date(),
+  //         authorId: o?.authorId,
+  //         votes: o?.votes,
+  //       };
+  //       redis.set(`data-${post?.id}`, RedisData);
+  //       console.log("return from post.findFirst");
+  //     });
+  // }
 
   // Store the post data as a hash
-  console.log("return from redis.hset");
+  // console.log("return from redis.hset");
   if (!cachedPost) {
-    // will not block when fetching from redis
+    console.log("wait on get CachedPost");
     cachedPost = await redis.get(`post-${params.postId}`);
     console.log("cachedPost is ", cachedPost);
-  }
-  if (!cachedData) {
-    // possibly fail on first call
-    cachedData = await redis.get(`data-${params.postId}`);
-    console.log("cachedData is ", cachedData);
   }
   
   // console.log(cachedPost)
@@ -103,7 +105,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
             // pass in a promise
-            getData={cachedData ? () => Promise.resolve(cachedData) : undefined}
+            getData={() => Promise.resolve(cachedData)}
           />
         </Suspense>
 

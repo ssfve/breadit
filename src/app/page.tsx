@@ -21,7 +21,7 @@ export default async function Home() {
     //do not wait
   getAuthSession().then((session) => {
     redis.set(`session`, session);
-    console.log("getAuthSession is", session);
+    // console.log("getAuthSession is", session);
   });
   if(!session){
     console.log("wait on get session started")
@@ -34,7 +34,7 @@ export default async function Home() {
       <h1 className="font-bold text-3xl md:text-4xl">Your feed</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-x-4 py-6">
         {/* @ts-expect-error server component */}
-        {session ? <CustomFeed session={session}/> : <GeneralFeed />}
+        {session ? <CustomFeed session={session}/> : <GeneralFeed/>}
 
         {/* subreddit info */}
         <div className="overflow-hidden h-fit rounded-lg border border-gray-200 order-first md:order-last">
