@@ -22,10 +22,13 @@ export const fetchCache = "force-no-store";
 let cachedPost: CachedPost | null = null;
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
+  
   console.log("SubRedditPostPage is called");
-  // we do not cache posts
   if (!cachedPost) {
-    cachedPost = (await redis.hget(`post`, `${params.postId}`)) as CachedPost;
+    // will not block when fetching from redis
+    redis.hget(`post`, `${params.postId}`).then((data) => {
+      cachedPost = (data) as CachedPost
+    })
   }
   console.log("cachedPost is ", cachedPost);
   // console.log(cachedPost)
@@ -63,7 +66,8 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
     };
 
     console.log("post is ", post);
-    await redis.hset(`post:${post?.id}`, cachePayload); // Store the post data as a hash
+    redis.hset(`post:${post?.id}`, cachePayload); 
+    // Store the post data as a hash
     console.log("return from redis.hset");
   }
 
