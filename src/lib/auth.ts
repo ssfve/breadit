@@ -68,4 +68,4 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
-export const getAuthSession = async () => getServerSession(authOptions)
+export const getAuthSession = () => getServerSession(authOptions)
