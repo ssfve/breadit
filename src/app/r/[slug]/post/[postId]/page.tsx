@@ -19,13 +19,18 @@ interface SubRedditPostPageProps {
 
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
+let cachedPost: CachedPost | null = null
 
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   
   console.log("SubRedditPostPage is called")
   // we do not cache posts
-  let cachedPost = null
-  // const cachedPost = {}
+  if(!cachedPost){
+    cachedPost = (await redis.hget(
+      `post`, `${params.postId}`
+    )) as CachedPost
+  } 
+  // console.log(cachedPost)
   // console.log(cachedPost)
   let post: (Post & { votes: Vote[]; author: User }) | null = null
 
