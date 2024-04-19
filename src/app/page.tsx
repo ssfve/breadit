@@ -21,11 +21,12 @@ export default async function Home() {
     //do not wait
   getAuthSession().then((session) => {
     redis.set(`session`, session);
-    console.log("session is", session);
+    console.log("getAuthSession is", session);
   });
   if(!session){
     console.log("wait on get session started")
     session = await redis.get(`session`)
+    console.log("redis session is", session);
   }
   console.log("Home rendering started")
   return (
