@@ -27,6 +27,8 @@ const style = {
 }
 
 const EditorOutput: FC<EditorOutputProps> = ({ content }) => {
+  console.log('EditorOutput is called')
+  console.log('content is ', content)
   return (
     // @ts-expect-error
     <Output

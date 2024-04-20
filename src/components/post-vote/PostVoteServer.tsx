@@ -33,7 +33,7 @@ const PostVoteServer = async ({
 
   if (getData) {
     // fetch data in component possible after db query
-    console.log("wait to getData");
+    console.log("wait to getData Vote");
     const post = await getData();
     if (!post) notFound();
     console.log("Vote post is ", post);
@@ -43,7 +43,7 @@ const PostVoteServer = async ({
       return acc;
     }, 0);
 
-    console.log("wait to get session")
+    console.log("wait to get Vote session")
     let session = (await redis.get(`session`)) as Session;
     console.log("Vote session is ", session);
     // const session = await getAuthSession()

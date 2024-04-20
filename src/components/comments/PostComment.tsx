@@ -48,11 +48,11 @@ const PostComment: FC<PostCommentProps> = ({
     mutationFn: async ({ postId, text, replyToId }: CommentRequest) => {
       const payload: CommentRequest = { postId, text, replyToId }
 
-      const { data } = await axios.patch(
+      axios.patch(
         `/api/subreddit/post/comment/`,
         payload
       )
-      return data
+      // return data
     },
 
     onError: () => {

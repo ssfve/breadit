@@ -34,7 +34,7 @@ const CommentsSection = async ({ postId, getData }: CommentsSectionProps) => {
   // const session = await getAuthSession()
   console.log("CommentsSection is called");
   let session = (await redis.get(`session`)) as Session;
-  console.log("Vote session is ", session);
+  console.log("CommentsSection session is ", session);
 
   cachedComments = await redis.get(`comments-${postId}`);
   if(!cachedComments){
@@ -64,8 +64,8 @@ const CommentsSection = async ({ postId, getData }: CommentsSectionProps) => {
     cachedComments = await redis.get(`comments-${postId}`);
   }
   console.log("comments is ", cachedComments);
-  if(!cachedComments) notFound();
-
+  if(!cachedComments) return notFound();
+  console.log("start render CommentsSection");
   return (
     <div className='flex flex-col gap-y-4 mt-4'>
       <hr className='w-full h-px my-6' />
