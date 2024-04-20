@@ -3,6 +3,10 @@ import PostFeed from '@/components/PostFeed'
 import { INFINITE_SCROLL_PAGINATION_RESULTS } from '@/config'
 import { getAuthSession } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { redis } from '@/lib/redis'
+import { ExtendedPost } from '@/types/db'
+import { Post, Subreddit } from '@prisma/client'
+import { Session } from 'next-auth'
 import { notFound } from 'next/navigation'
 
 interface PageProps {
@@ -10,13 +14,18 @@ interface PageProps {
     slug: string
   }
 }
+let subreddit : Subreddit & { posts : ExtendedPost[];} | null = null;
 
 const page = async ({ params }: PageProps) => {
   const { slug } = params
 
-  const session = await getAuthSession()
-
-  const subreddit = await db.subreddit.findFirst({
+  // const session = await getAuthSession()
+  console.log("CommentsSection is called");
+  let session = (await redis.get(`session`)) as Session;
+  console.log("Vote session is ", session);
+  
+  subreddit = await redis.get(`subreddit-${slug}`)
+  db.subreddit.findFirst({
     where: { name: slug },
     include: {
       posts: {
@@ -33,6 +42,10 @@ const page = async ({ params }: PageProps) => {
       },
     },
   })
+
+  while(!subreddit){
+    subreddit = await redis.get(`subreddit-${slug}`)
+  }
 
   if (!subreddit) return notFound()
 
