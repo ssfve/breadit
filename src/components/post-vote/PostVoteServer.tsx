@@ -3,6 +3,7 @@ import PostVoteClient from "./PostVoteClient";
 import { redis } from "@/lib/redis";
 import { Session } from "next-auth";
 import { CachedPost } from "@/types/redis";
+import { notFound } from "next/navigation";
 
 interface PostVoteServerProps {
   postId: string;
@@ -24,7 +25,7 @@ const PostVoteServer = async ({
   postId,
   initialVotesAmt,
   initialVote,
-  post
+  getData
 }: PostVoteServerProps) => {
   console.log("PostVoteServer is called");
   let session = (await redis.get(`session`)) as Session;
@@ -34,11 +35,12 @@ const PostVoteServer = async ({
   let _votesAmt: number = 0;
   let _currentVote: Vote["type"] | null | undefined = undefined;
 
-  if (post) {
+  if (getData) {
     // fetch data in component possible after db query
-    // console.log("wait to getData");
-    // const post = await getData();
-    // if(!post) notFound();
+    console.log("wait to getData");
+    const post = await getData();
+    if(!post) notFound();
+    
     console.log("Vote post is ", post);
 
     _votesAmt = post.votes.reduce((acc, vote) => {

@@ -84,7 +84,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
             // pass in a promise
             // getData={async () => Promise.resolve(await redis.get(`post-${params.postId}`) as (CachedPost & { votes: Vote[] } | null))}
             // this promise also read from redis
-            post={cachedPost}
+            getData={() => Promise.resolve(cachedPost)}
           />
         </Suspense>
 
