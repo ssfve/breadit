@@ -28,7 +28,7 @@ export default async function CustomFeed({ session }: CustomFeedProps) {
       subreddit: true,
     },
   }).then((o) => {
-    redis.set(`customFeed-${session?.user.id}`, o);
+    redis.set(`customFeed-subscription-${session?.user.id}`, o);
   })
 
   const followedCommunities = (await redis.get(`customFeed-subscription-${session?.user.id}`));
