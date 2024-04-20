@@ -1,11 +1,13 @@
 import { getAuthSession } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { Comment, CommentVote, User } from '@prisma/client'
+import { Comment, CommentVote, User, Vote } from '@prisma/client'
 import CreateComment from './CreateComment'
 import PostComment from './comments/PostComment'
 import { redis } from '@/lib/redis'
 import { notFound } from 'next/navigation'
 import { Session } from 'next-auth'
+import { CachedPost } from '@/types/redis'
+import { isGeneratorFunction } from 'util/types'
 
 type ExtendedComment = Comment & {
   votes: CommentVote[]
@@ -21,10 +23,14 @@ type ReplyComment = Comment & {
 interface CommentsSectionProps {
   postId: string
   comments: ExtendedComment[]
+  getData: () => Promise<(CachedPost & { votes: Vote[] } | null)>;
 }
 let cachedComments : ExtendedComment[] | null = null;
 
-const CommentsSection = async ({ postId }: CommentsSectionProps) => {
+const CommentsSection = async ({ postId, getData }: CommentsSectionProps) => {
+  if(getData){
+    await getData();
+  }
   // const session = await getAuthSession()
   console.log("CommentsSection is called");
   let session = (await redis.get(`session`)) as Session;

@@ -9,14 +9,14 @@ interface PostVoteServerProps {
   postId: string;
   initialVotesAmt?: number;
   initialVote?: Vote["type"] | null;
-  post: CachedPost & { votes: Vote[] } | null;
-  getData?: () => Promise<(CachedPost & { votes: Vote[] } | null)>;
+  post: (CachedPost & { votes: Vote[] }) | null;
+  getData?: () => Promise<(CachedPost & { votes: Vote[] }) | null>;
 }
 
 /**
  * We split the PostVotes into a client and a server component to allow for dynamic data
  * fetching inside of this component, allowing for faster page loads via suspense streaming.
- * 
+ *
  * We also have to option to fetch this info on a page-level and pass it in.
  *
  */
@@ -25,13 +25,9 @@ const PostVoteServer = async ({
   postId,
   initialVotesAmt,
   initialVote,
-  getData
+  getData,
 }: PostVoteServerProps) => {
   console.log("PostVoteServer is called");
-  let session = (await redis.get(`session`)) as Session;
-  console.log("Vote session is ", session);
-  // const session = await getAuthSession()
-
   let _votesAmt: number = 0;
   let _currentVote: Vote["type"] | null | undefined = undefined;
 
@@ -39,16 +35,18 @@ const PostVoteServer = async ({
     // fetch data in component possible after db query
     console.log("wait to getData");
     const post = await getData();
-    if(!post) notFound();
-    
+    if (!post) notFound();
     console.log("Vote post is ", post);
-
     _votesAmt = post.votes.reduce((acc, vote) => {
       if (vote.type === "UP") return acc + 1;
       if (vote.type === "DOWN") return acc - 1;
       return acc;
     }, 0);
 
+    console.log("wait to get session")
+    let session = (await redis.get(`session`)) as Session;
+    console.log("Vote session is ", session);
+    // const session = await getAuthSession()
     // seesion user id is your post
     _currentVote = post.votes.find(
       (vote) => vote.userId === session?.user.id

@@ -64,14 +64,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
     cachedPost = await redis.get(`post-${params.postId}`);
   }
   console.log("cachedPost is ", cachedPost);
-  // call PostVoteServer before findUnique
-  // PostVoteServer({
-  //   postId: cachedPost?.id ?? "",
-  //   initialVotesAmt: cachedPost?.votes.length ?? 0,
-  //   initialVote: null,
-  //   post: cachedPost
-  // });
-
+  
   if (!post && !cachedPost) return notFound();
   console.log("start redenring SubRedditPostPage");
   return (
@@ -102,7 +95,8 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           <EditorOutput content={post?.content ?? cachedPost?.content} />
           <Suspense fallback={<Loader2 className="h-5 w-5 animate-spin text-zinc-500" />} >
             {/* @ts-expect-error Server Component */}
-            <CommentsSection postId={post?.id ?? cachedPost.id} />
+            <CommentsSection postId={post?.id ?? cachedPost.id}
+              getData={() => Promise.resolve(cachedPost)}/>
           </Suspense>
         </div>
       </div>
@@ -111,6 +105,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
 };
 
 function PostVoteShell() {
+  console.log("PostVoteShell is called");
   return (
     <div className="flex items-center flex-col pr-6 w-20">
       {/* upvote */}
