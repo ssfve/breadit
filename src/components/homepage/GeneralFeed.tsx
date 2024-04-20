@@ -6,10 +6,10 @@ import { ExtendedPost } from '@/types/db';
 import { redis } from '@/lib/redis';
 let session: Session | null = null;
 
-const GeneralFeed = async () => {
+const GeneralFeed = async (session: Session | null) => {
   console.log("GeneralFeed is called");
-  session = await redis.get(`session`)
-  console.log("GeneralFeed session is", session);
+  // session = await redis.get(`session`)
+  // console.log("GeneralFeed session is", session);
   
   db.post.findMany({
     orderBy: {
