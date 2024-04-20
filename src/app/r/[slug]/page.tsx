@@ -20,11 +20,15 @@ const page = async ({ params }: PageProps) => {
   const { slug } = params
 
   // const session = await getAuthSession()
-  console.log("CommentsSection is called");
+  console.log("r[slug] is called");
   let session = (await redis.get(`session`)) as Session;
-  console.log("Vote session is ", session);
-  
+  console.log("r[slug] session is ", session);
+  console.log("slug is ", slug);
+
+  console.log("wait for subreddit");
   subreddit = await redis.get(`subreddit-${slug}`)
+  console.log("subreddit is ", subreddit);
+
   db.subreddit.findFirst({
     where: { name: slug },
     include: {
@@ -46,9 +50,10 @@ const page = async ({ params }: PageProps) => {
   while(!subreddit){
     subreddit = await redis.get(`subreddit-${slug}`)
   }
-
+  console.log("subreddit is ", subreddit);
+  
   if (!subreddit) return notFound()
-
+  console.log("start render r[slug]")
   return (
     <>
       <h1 className='font-bold text-3xl md:text-4xl h-14'>
