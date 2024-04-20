@@ -29,7 +29,7 @@ const PostVoteServer = async ({
   postId,
   initialVotesAmt,
   initialVote,
-  getData
+  post
 }: PostVoteServerProps) => {
   console.log("PostVoteServer is called");
   const session = (await redis.get(`session`)) as Session;
@@ -39,13 +39,11 @@ const PostVoteServer = async ({
   let _votesAmt: number = 0;
   let _currentVote: Vote["type"] | null | undefined = undefined;
 
-  if (getData) {
+  if (post) {
     // fetch data in component possible after db query
-    console.log("wait to getData");
-  
-    const post = await getData();
-
-    if(!post) notFound();
+    // console.log("wait to getData");
+    // const post = await getData();
+    // if(!post) notFound();
     console.log("Vote post is ", post);
 
     _votesAmt = post.votes.reduce((acc, vote) => {

@@ -57,7 +57,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
 
   // faster to get cachedPost
   if (!cachedPost) {
-    console.log("wait on get CachedPost");
+    console.log("wait to get CachedPost");
     cachedPost = await redis.get(`post-${params.postId}`);
   }
   console.log("cachedPost is ", cachedPost);
@@ -67,16 +67,16 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   return (
     <div>
       <div className="h-full flex flex-col sm:flex-row items-center sm:items-start justify-between">
-        <Suspense fallback={<PostVoteShell />}>
+        {/* <Suspense fallback={<PostVoteShell />}> */}
           {/* @ts-expect-error server component */}
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
             // pass in a promise
-            getData={async () => Promise.resolve(await redis.get(`post-${params.postId}`) as (CachedPost & { votes: Vote[] } | null))}
+            // getData={async () => Promise.resolve(await redis.get(`post-${params.postId}`) as (CachedPost & { votes: Vote[] } | null))}
             // this promise also read from redis
             post={cachedPost}
           />
-        </Suspense>
+        {/* </Suspense> */}
 
         <div className="sm:w-0 w-full flex-1 bg-white p-4 rounded-sm">
           <p className="max-h-40 mt-1 truncate text-xs text-gray-500">
@@ -90,14 +90,14 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           </h1>
 
           <EditorOutput content={post?.content ?? cachedPost?.content} />
-          <Suspense
+          {/* <Suspense
             fallback={
               <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
             }
-          >
+          > */}
             {/* @ts-expect-error Server Component */}
             <CommentsSection postId={post?.id ?? cachedPost.id} />
-          </Suspense>
+          {/* </Suspense> */}
         </div>
       </div>
     </div>
