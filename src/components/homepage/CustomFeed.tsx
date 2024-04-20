@@ -31,7 +31,7 @@ export default async function CustomFeed({ session }: CustomFeedProps) {
     redis.set(`customFeed-subscription-${session?.user.id}`, o);
   })
 
-  const followedCommunities = (await redis.get(`customFeed-subscription-${session?.user.id}`));
+  let followedCommunities = (await redis.get(`customFeed-subscription-${session?.user.id}`));
   console.log("findMany is called", followedCommunities)
 
   db.post.findMany({
@@ -56,9 +56,10 @@ export default async function CustomFeed({ session }: CustomFeedProps) {
     redis.set(`customFeed-post-${session?.user.id}`, o);
   })
   
-  const posts = (await redis.get(`customFeed-post-${session?.user.id}`)) as ExtendedPost[];
+  let posts = (await redis.get(`customFeed-post-${session?.user.id}`)) as ExtendedPost[];
   console.log("posts in CustomFeed is ", posts);
 
+  console.log("start rendering CustomFeed");
   return <PostFeed initialPosts={posts} />
 }
 
