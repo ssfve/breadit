@@ -24,10 +24,10 @@ const GeneralFeed = async (session: Session | null) => {
     take: parseInt(INFINITE_SCROLL_PAGINATION_RESULTS.toString()), 
     // 4 to demonstrate infinite scroll, should be higher in production
   }).then((o) => {
-    redis.set(`generalFeed-${session?.user.id}`, o);
+    redis.set(`generalFeed-${session?.user?.id}`, o);
   })
 
-  const posts = (await redis.get(`generalFeed-${session?.user.id}`)) as ExtendedPost[];
+  const posts = (await redis.get(`generalFeed-${session?.user?.id}`)) as ExtendedPost[];
   console.log("posts is ", posts);
   return <PostFeed initialPosts={posts}/>
 }

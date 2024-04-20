@@ -25,7 +25,8 @@ export default async function Home() {
   });
   if(!session){
     console.log("wait on get session started")
-    session = await redis.get(`session`)
+    // if wait result is null wait again
+    session = (await redis.get(`session`)) ?? await redis.get(`session`)
     console.log("redis session is", session);
   }
   console.log("Home rendering started")
