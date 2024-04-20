@@ -45,13 +45,15 @@ const page = async ({ params }: PageProps) => {
         take: INFINITE_SCROLL_PAGINATION_RESULTS,
       },
     },
+  }).then((o) => {
+      redis.set(`subreddit-${slug}`, o)
   })
 
   while(!subreddit){
     subreddit = await redis.get(`subreddit-${slug}`)
   }
   console.log("subreddit is ", subreddit);
-  
+
   if (!subreddit) return notFound()
   console.log("start render r[slug]")
   return (
