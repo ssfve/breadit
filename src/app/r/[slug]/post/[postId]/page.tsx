@@ -59,10 +59,9 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   if (!cachedPost) {
     console.log("wait on get CachedPost");
     cachedPost = await redis.get(`post-${params.postId}`);
-    console.log("cachedPost is ", cachedPost);
   }
+  console.log("cachedPost is ", cachedPost);
   
-  // console.log(cachedPost)
   if (!post && !cachedPost) return notFound();
   console.log("start redenring SubRedditPostPage");
   return (
