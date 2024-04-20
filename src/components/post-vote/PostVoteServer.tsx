@@ -14,7 +14,7 @@ interface PostVoteServerProps {
   initialVotesAmt?: number;
   initialVote?: Vote["type"] | null;
   post: CachedPost & { votes: Vote[] } | null;
-  getData?: () => Promise<(Post & { votes: Vote[] } | null)>;
+  getData?: () => Promise<(CachedPost & { votes: Vote[] } | null)>;
 }
 
 /**
