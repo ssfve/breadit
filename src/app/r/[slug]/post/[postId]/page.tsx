@@ -6,8 +6,7 @@ import { db } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { formatTimeToNow } from "@/lib/utils";
 import { CachedPost } from "@/types/redis";
-import { Post, User, Vote, VoteType } from "@prisma/client";
-import { GetResult } from "@prisma/client/runtime";
+import { Post, User, Vote } from "@prisma/client";
 import { ArrowBigDown, ArrowBigUp, Loader2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -78,7 +77,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   return (
     <div>
       <div className="h-full flex flex-col sm:flex-row items-center sm:items-start justify-between">
-        {/* <Suspense fallback={<PostVoteShell />}> */}
+        <Suspense fallback={<PostVoteShell />}>
           {/* @ts-expect-error server component */}
           <PostVoteServer
             postId={post?.id ?? cachedPost?.id ?? ""}
@@ -87,7 +86,7 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
             // this promise also read from redis
             post={cachedPost}
           />
-        {/* </Suspense> */}
+        </Suspense>
 
         <div className="sm:w-0 w-full flex-1 bg-white p-4 rounded-sm">
           <p className="max-h-40 mt-1 truncate text-xs text-gray-500">
@@ -101,14 +100,10 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
           </h1>
 
           <EditorOutput content={post?.content ?? cachedPost?.content} />
-          {/* <Suspense
-            fallback={
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
-            }
-          > */}
+          <Suspense fallback={<Loader2 className="h-5 w-5 animate-spin text-zinc-500" />} >
             {/* @ts-expect-error Server Component */}
             <CommentsSection postId={post?.id ?? cachedPost.id} />
-          {/* </Suspense> */}
+          </Suspense>
         </div>
       </div>
     </div>
