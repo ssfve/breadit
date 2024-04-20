@@ -1,6 +1,8 @@
 import { getAuthSession } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { redis } from '@/lib/redis'
 import { CommentValidator } from '@/lib/validators/comment'
+import { Session } from 'next-auth'
 import { z } from 'zod'
 
 export async function PATCH(req: Request) {
@@ -9,14 +11,15 @@ export async function PATCH(req: Request) {
 
     const { postId, text, replyToId } = CommentValidator.parse(body)
 
-    const session = await getAuthSession()
-
+    // const session = await getAuthSession()
+    let session = (await redis.get(`session`)) as Session;
+    
     if (!session?.user) {
       return new Response('Unauthorized', { status: 401 })
     }
 
     // if no existing vote, create a new vote
-    await db.comment.create({
+    db.comment.create({
       data: {
         text,
         postId,

@@ -29,8 +29,9 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   // post is null do not use
   cachedPost = await redis.get(`post-${params.postId}`);
   console.log("first call to cachedPost is ", cachedPost);
-  
+
   if (!cachedPost) {
+    console.log("query db is called")
     db.post
       .findUnique({
         where: {

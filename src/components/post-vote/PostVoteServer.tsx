@@ -1,13 +1,8 @@
-import { getAuthSession } from "@/lib/auth";
-import type { Post, User, Vote } from "@prisma/client";
-import { notFound } from "next/navigation";
+import type { Vote } from "@prisma/client";
 import PostVoteClient from "./PostVoteClient";
 import { redis } from "@/lib/redis";
 import { Session } from "next-auth";
 import { CachedPost } from "@/types/redis";
-import { ca } from "date-fns/locale";
-import { get } from "http";
-import { getDate } from "date-fns";
 
 interface PostVoteServerProps {
   postId: string;

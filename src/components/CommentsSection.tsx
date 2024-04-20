@@ -32,6 +32,7 @@ const CommentsSection = async ({ postId }: CommentsSectionProps) => {
 
   cachedComments = await redis.get(`comments-${postId}`);
   if(!cachedComments){
+    console.log("query db is called")
     db.comment.findMany({
       where: {
         postId: postId,
