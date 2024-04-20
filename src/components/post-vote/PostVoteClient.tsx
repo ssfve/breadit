@@ -32,7 +32,7 @@ const PostVoteClient = ({
   useEffect(() => {
     setCurrentVote(initialVote)
   }, [initialVote])
-
+  console.log("PostVoteClient is called")
   const { mutate: vote } = useMutation({
     mutationFn: async (type: VoteType) => {
       const payload: PostVoteRequest = {
