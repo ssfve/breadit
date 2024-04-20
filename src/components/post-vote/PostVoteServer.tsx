@@ -32,7 +32,7 @@ const PostVoteServer = async ({
   post
 }: PostVoteServerProps) => {
   console.log("PostVoteServer is called");
-  const session = (await redis.get(`session`)) as Session;
+  let session = (await redis.get(`session`)) as Session;
   console.log("Vote session is ", session);
   // const session = await getAuthSession()
 

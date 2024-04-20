@@ -27,6 +27,9 @@ let cachedData: (Post & { votes: Vote[]; }) | null = null;
 const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   console.log("SubRedditPostPage is called");
   // post is null do not use
+  cachedPost = await redis.get(`post-${params.postId}`);
+  console.log("first call to cachedPost is ", cachedPost);
+  
   if (!cachedPost) {
     db.post
       .findUnique({
@@ -56,12 +59,19 @@ const SubRedditPostPage = async ({ params }: SubRedditPostPageProps) => {
   }
 
   // faster to get cachedPost
-  if (!cachedPost) {
+  while(!cachedPost) {
     console.log("wait to get CachedPost");
     cachedPost = await redis.get(`post-${params.postId}`);
   }
   console.log("cachedPost is ", cachedPost);
-  
+  // call PostVoteServer before findUnique
+  // PostVoteServer({
+  //   postId: cachedPost?.id ?? "",
+  //   initialVotesAmt: cachedPost?.votes.length ?? 0,
+  //   initialVote: null,
+  //   post: cachedPost
+  // });
+
   if (!post && !cachedPost) return notFound();
   console.log("start redenring SubRedditPostPage");
   return (
