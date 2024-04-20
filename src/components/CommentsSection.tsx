@@ -3,6 +3,9 @@ import { db } from '@/lib/db'
 import { Comment, CommentVote, User } from '@prisma/client'
 import CreateComment from './CreateComment'
 import PostComment from './comments/PostComment'
+import { redis } from '@/lib/redis'
+import { notFound } from 'next/navigation'
+import { Session } from 'next-auth'
 
 type ExtendedComment = Comment & {
   votes: CommentVote[]
@@ -19,27 +22,42 @@ interface CommentsSectionProps {
   postId: string
   comments: ExtendedComment[]
 }
+let cachedComments : ExtendedComment[] | null = null;
 
 const CommentsSection = async ({ postId }: CommentsSectionProps) => {
-  const session = await getAuthSession()
+  // const session = await getAuthSession()
+  console.log("CommentsSection is called");
+  let session = (await redis.get(`session`)) as Session;
+  console.log("Vote session is ", session);
 
-  const comments = await db.comment.findMany({
-    where: {
-      postId: postId,
-      replyToId: null, // only fetch top-level comments
-    },
-    include: {
-      author: true,
-      votes: true,
-      replies: {
-        // first level replies
-        include: {
-          author: true,
-          votes: true,
+  cachedComments = await redis.get(`comments-${postId}`);
+  if(!cachedComments){
+    db.comment.findMany({
+      where: {
+        postId: postId,
+        replyToId: null, // only fetch top-level comments
+      },
+      include: {
+        author: true,
+        votes: true,
+        replies: {
+          // first level replies
+          include: {
+            author: true,
+            votes: true,
+          },
         },
       },
-    },
-  })
+    }).then((o)=>{
+        redis.set(`comments-${postId}`, o);
+    })
+  }
+
+  while(!cachedComments){
+    cachedComments = await redis.get(`comments-${postId}`);
+  }
+  console.log("comments is ", cachedComments);
+  if(!cachedComments) notFound();
 
   return (
     <div className='flex flex-col gap-y-4 mt-4'>
@@ -48,9 +66,9 @@ const CommentsSection = async ({ postId }: CommentsSectionProps) => {
       <CreateComment postId={postId} />
 
       <div className='flex flex-col gap-y-6 mt-4'>
-        {comments
+        {cachedComments
           .filter((comment) => !comment.replyToId)
-          .map((topLevelComment) => {
+            .map((topLevelComment) => {
             const topLevelCommentVotesAmt = topLevelComment.votes.reduce(
               (acc, vote) => {
                 if (vote.type === 'UP') return acc + 1
