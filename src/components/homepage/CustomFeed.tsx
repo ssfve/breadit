@@ -56,9 +56,11 @@ export default async function CustomFeed({ session }: CustomFeedProps) {
     redis.set(`customFeed-post-${session?.user.id}`, o);
   })
   
-  let posts = (await redis.get(`customFeed-post-${session?.user.id}`)) as ExtendedPost[];
+  let posts : ExtendedPost[] | null = null;
+  while(!posts){
+    posts = (await redis.get(`customFeed-post-${session?.user.id}`)) as ExtendedPost[];
+  }
   console.log("posts in CustomFeed is ", posts);
-
   console.log("start rendering CustomFeed");
   return <PostFeed initialPosts={posts} />
 }

@@ -27,7 +27,11 @@ const GeneralFeed = async (session: Session | null) => {
     redis.set(`generalFeed-${session?.user?.id}`, o);
   })
 
-  const posts = (await redis.get(`generalFeed-${session?.user?.id}`)) as ExtendedPost[];
+  // let posts = (await redis.get(`generalFeed-${session?.user?.id}`)) as ExtendedPost[];
+  let posts: ExtendedPost[] | null = null;
+  while(!posts){
+    posts = (await redis.get(`generalFeed-${session?.user?.id}`)) as ExtendedPost[];
+  }
   console.log("posts is ", posts);
   return <PostFeed initialPosts={posts}/>
 }
