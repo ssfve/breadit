@@ -32,7 +32,7 @@ export default async function CustomFeed({ session }: CustomFeedProps) {
   })
 
   const followedCommunities = (await redis.get(`customFeed-subscription-${session?.user.id}`));
-  console.log("findMany is called")
+  console.log("findMany is called", followedCommunities)
 
   db.post.findMany({
     where: {
